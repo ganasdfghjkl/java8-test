@@ -19,7 +19,7 @@ public class OptionalTest2 {
                 .build();
         Optional<Company> optional = Optional.ofNullable(company);
         System.out.println(
-                optional.map(Company::getEmployees)
+                        optional.map(Company::getEmployees)
                 .orElse(Collections.emptyList())
         );
     }
