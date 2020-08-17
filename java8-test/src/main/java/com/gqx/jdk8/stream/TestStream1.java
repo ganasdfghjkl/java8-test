@@ -2,6 +2,7 @@ package com.gqx.jdk8.stream;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 /**
@@ -27,6 +28,40 @@ import java.util.stream.Stream;
  *  4.延迟查找，很多流操作(过滤、映射、排序等)都可以延迟实现
  *
  *
+ *
+ *  1.和迭代器不同的是，Stream可以并行化操作，迭代器只能命令式的、穿行操作
+ *  2.当使用穿行方式去遍历时，每个item 读完后在度下一个item
+ *  3.使用并行去遍历时，数据会被分成多个段，其中每个都在不同的线程中处理，然后将结果一起输出
+ *  4.Stream的并行操作依赖于JAVA7 中引入的Fork/Join框架
+ *
+ *
+ *  中间操作都会返回一个Stream 对象。
+ *   终止操作则不会返回Stream对象，可能不返回值，也可能返回其他类型的单个值
+ *  内部迭代
+ *
+ *  外部迭代
+ *  <pre>
+ *      {@code
+ *      for(i=0;i<list.length;i++){
+ *          A a = list.get(i);
+ *          if(......){
+ *              .........
+ *          }
+ *      }
+ *      Collection.sort(list,Comparator()........);
+ *      for(int i;i<list.length;i++){
+ *          ........................
+ *      }
+ *      }
+ *  </pre>
+ *  集合关注数据和数据存储本身
+ *  流关注的则是对数据的计算
+ *
+ *  流和迭代器类似的一点是，流是无法重复使用或者消费的
+ *
+ *
+ *
+ *
  */
 public class TestStream1 {
     public static void main(String[] args) {
@@ -41,6 +76,7 @@ public class TestStream1 {
 
         List<String> list = Arrays.asList(myArr);
         Stream stream4 = list.stream();
+
 
     }
 }
