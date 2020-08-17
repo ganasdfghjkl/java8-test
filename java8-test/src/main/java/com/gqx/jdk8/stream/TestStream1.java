@@ -87,6 +87,10 @@ import java.util.stream.Stream;
  *
  *
  *
+ * Collectors ：
+ * 分组：groupingBy
+ * 分区：partitioningBy
+ *
  */
 public class TestStream1 {
     public static void main(String[] args) {
