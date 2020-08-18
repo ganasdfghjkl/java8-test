@@ -1,9 +1,7 @@
 package com.gqx.jdk8.stream2;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.*;
@@ -104,44 +102,41 @@ public class StreamTest1 {
         Student s2 = Student.builder().name("lisi").score(90).build();
         Student s3 = Student.builder().name("wangwu").score(100).build();
         Student s4 = Student.builder().name("zhaoliu").score(90).build();
-        List<Student> list = Arrays.asList(s1, s2, s3, s4);
+        Student s5 = Student.builder().name("zhaoliu").score(90).build();
+
+        List<Student> list = Arrays.asList(s1, s2, s3, s4,s5);
         list.stream().collect(Collectors.toList()).forEach(System.out::println);
         System.out.println("-----------------------------");
         System.out.println("count:"+list.stream().collect(counting()));
         System.out.println("count:"+list.stream().count());
         System.out.println("-----------------------------");
 
+        list.stream().collect(minBy(Comparator.comparingInt(Student::getScore))).ifPresent(System.out::println);
+        list.stream().collect(maxBy(Comparator.comparingInt(Student::getScore))).ifPresent(System.out::println);
+        System.out.println("-----------------------------");
 
-        List<TripDateDto> tripDateDtoList = Arrays.asList(
-                TripDateDto.builder()
-                        .year(2020)
-                        .month(8)
-                        .day(17)
-                        .build(),
-                TripDateDto.builder()
-                        .year(2019)
-                        .month(8)
-                        .day(17)
-                        .build(),
-                TripDateDto.builder()
-                        .year(2020)
-                        .month(8)
-                        .day(17)
-                        .build(),
-                TripDateDto.builder()
-                        .year(2020)
-                        .month(8)
-                        .day(17)
-                        .build(),
-                TripDateDto.builder()
-                        .year(2020)
-                        .month(8)
-                        .day(16)
-                        .build()
-
-        );
-        List<TripDateDto> list21123 = tripDateDtoList.stream().distinct().collect(Collectors.toList());
-        System.out.println(list21123);
+        System.out.println(list.stream().collect(averagingInt(Student::getScore)));
+        System.out.println(list.stream().collect(summingInt(Student::getScore)));
+        System.out.println("-----------------------------");
+        IntSummaryStatistics intSummaryStatistics = list.stream().collect(summarizingInt(Student::getScore));
+        System.out.println(intSummaryStatistics);
+        System.out.println("-----------------------------");
+        System.out.println(list.stream().map(Student::getName).collect(joining()));
+        System.out.println(list.stream().map(Student::getName).collect(joining(",")));
+        System.out.println(list.stream().map(Student::getName).collect(joining(",","<begin>","<end>")));
+        System.out.println("-----------------------------");
+        System.out.println(list.stream().collect(groupingBy(Student::getScore,groupingBy(Student::getName))));
+        System.out.println("-----------------------------");
+        System.out.println(list.stream().collect(partitioningBy(student -> student.getScore() > 80)));
+        System.out.println("-----------------------------");
+        System.out.println(list.stream().collect(partitioningBy(student -> student.getScore() > 80,groupingBy(Student::getScore,groupingBy(Student::getName)))));
+        System.out.println(list.stream().collect(partitioningBy(student -> student.getScore()>80,counting())));
+        System.out.println("-----------------------------");
+        System.out.println(list.stream().collect(groupingBy(Student::getName,
+                collectingAndThen(
+                        minBy(Comparator.
+                                comparingInt(Student::getScore)),
+                        Optional::get))));
     }
 
 }
