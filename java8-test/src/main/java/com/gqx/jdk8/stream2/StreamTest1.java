@@ -95,6 +95,21 @@ import static java.util.stream.Collectors.*;
  *             }
  *         </pre>
  *
+ *
+ *
+ *
+ *
+ *  特性：
+ *      CONCURRENT : 支持累加器可以并发调用，与并行的区别为，并行的多线程有自己的结果容器，并发调用公用一个结果容器
+ *                    如果没有和UNORDERED 同时使用，则数据源必须是无序的
+ *      UNORDERED ： 收集操作是无序的
+ *
+ *      IDENTITY_FINISH : 标识 finisher 函数就是 identity 类型 A->R 是成立的，才能配置为IDENTITY_FINISH,且可以忽略 finisher 函数
+ *
+ *
+ *
+ *
+ *
  */
 public class StreamTest1 {
     public static void main(String[] args) {
