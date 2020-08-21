@@ -127,7 +127,8 @@ public class StreamTest1 {
         System.out.println("-----------------------------");
 
         list.stream().collect(minBy(Comparator.comparingInt(Student::getScore))).ifPresent(System.out::println);
-        list.stream().collect(maxBy(Comparator.comparingInt(Student::getScore))).ifPresent(System.out::println);
+        list.stream().collect(
+                maxBy(Comparator.comparingInt(Student::getScore))).ifPresent(System.out::println);
         System.out.println("-----------------------------");
 
         System.out.println(list.stream().collect(averagingInt(Student::getScore)));
