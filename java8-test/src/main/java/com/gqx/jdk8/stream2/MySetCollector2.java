@@ -15,10 +15,14 @@ public class MySetCollector2<T>
         implements
         Collector<T, Set<T>, Map<T, T>> {
 
+     volatile int i = 0;
     @Override
     public Supplier<Set<T>> supplier() {
         System.out.println(Thread.currentThread().getName()+"================>调用Supplier");
-        return HashSet::new;
+        return ()->{
+            System.out.println("------------------->"+(++i));
+            return new HashSet<>();
+        };
     }
 
     @Override
@@ -34,7 +38,7 @@ public class MySetCollector2<T>
     public BinaryOperator<Set<T>> combiner() {
         System.out.println(Thread.currentThread().getName()+"================>调用combiner");
         return (a, b) -> {
-            System.out.println(Thread.currentThread().getName()+"================>执行combiner ");
+            System.out.println(Thread.currentThread().getName()+"================>执行combiner "+a+b);
             a.addAll(b);
             return a;
         };
@@ -44,7 +48,7 @@ public class MySetCollector2<T>
     @Override
     public Set<Characteristics> characteristics() {
         System.out.println(Thread.currentThread().getName()+"================>调用characteristics");
-        return Collections.unmodifiableSet(EnumSet.of( Characteristics.UNORDERED,Characteristics.CONCURRENT));
+        return Collections.unmodifiableSet(EnumSet.of( Characteristics.UNORDERED));
     }
 
     @Override
@@ -61,6 +65,7 @@ public class MySetCollector2<T>
     }
 
     public static void main(String[] args) {
+        System.out.println(Runtime.getRuntime().availableProcessors());
         List<String> list = Arrays.asList("hello", "world", "hello world","a","s","w","g","w","q");
         Map map = list.parallelStream()
                 .collect(new MySetCollector2<>());
