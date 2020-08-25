@@ -38,6 +38,19 @@
 >
 > * 流管道可以以穿行或者并行方式执行，这种执行模式只是流中的一种属性。 
 >  
->  
-
- 
+#Collection 
+> ##spliterator() 分割迭代器
+> * 创建一个针对这个集合元素的分割迭代器
+> 
+> * 实现应该对spliterator 返回的特性值进行文档化的说明(记录下来)；
+>
+> * 默认的实现应该被子类重写，返回一个更加高效的分割迭代器，为了保留流(```stream() parallelStream()```)的延迟行为，
+>   分割迭代器需要有 不可变的(IMMUTABLE)、并发的(CONCURRENT)或者是延迟绑定的(late-binding)；如果这些都无法实现，
+>   重写的类应该用文档化的描述分割迭代器的绑定和结构上出现的修改和行为(用分割迭代器去描述一个流的时候，在进行分割和迭代的时候，
+>   流可能被外界进行修改，需要将这种修改描述出来)，并且应该重写 ``` stream() parallelStream() ``` 来创建流 使用 spliterator 
+>   的 ```Supplier```来创建，如下：
+>   ```Stream<E> s = StreamSupport.stream(()->splitertor(),spliteratorCharacteristics) ```
+>   
+>
+>
+>
