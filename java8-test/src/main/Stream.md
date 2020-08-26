@@ -50,7 +50,10 @@
 >   流可能被外界进行修改，需要将这种修改描述出来)，并且应该重写 ``` stream() parallelStream() ``` 来创建流 使用 spliterator 
 >   的 ```Supplier```来创建，如下：
 >   ```Stream<E> s = StreamSupport.stream(()->splitertor(),spliteratorCharacteristics) ```
->   
+> 
+> * 这些要求确保了 ```stream()```和```parallelStream()``` 生成的流，从终止流操作发起的时候会反应出集合的内容
+> 
+> * 默认
 >
 >
 >
