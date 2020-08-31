@@ -117,6 +117,31 @@
 >   Spliterator 被设计成支持高效的并行操作，通过支持分解和单元素的迭代来实现。
 >   此外，通过Spliterator这种方式去访问每个元素施加了更小的负担相比于Iterator,避免了像
 >   Iterator 使用```hasNext(),next()```这两个方法遍历下一个元素，而是使用一个方法。
+>   hasNext() Next() 搭配使用可能会出现竞争。
+>
+> * 对于可变的源来说，源的结构被修改了(元素的添加，替换，删除)，在Spliterator绑定源之后和遍历完成之前，可能会发生任意不确定的行为。
+>   比如这种修改在使用 ```java.util.stream```框架的时候就可能产生不确定的结果
+>
+> * 源的结构上的修改可以通过下面几种方式来修改：
+>   > 1. 源的结构不能被修改；比如：```java.util.CopyOnWriteArrayList``` CopyOnWriteArrayList 是针对ArrayList的并发实现，
+>   >    通过这个源创建的Spliterator就会包含一个```IMMUTABLE```的特性值。
+>   > 2. 源自己管理并发；比如：```java.util.ConcurrentHashMap``` 他的键的集合就是一个并发的源，
+>   >    通过这个源创建的Spliterator包含```CONCURRENT```这个特性
+>   > 3. 
+>   >
+>   >
+>   >
+>   >
+>   >
+>   >
+>   >
+>   >
+>   >
+>   >
+>   >
+>   >
+
+>
 >
 >
 >
