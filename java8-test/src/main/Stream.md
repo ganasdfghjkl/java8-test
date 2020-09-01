@@ -127,22 +127,75 @@
 >   >    通过这个源创建的Spliterator就会包含一个```IMMUTABLE```的特性值。
 >   > 2. 源自己管理并发；比如：```java.util.ConcurrentHashMap``` 他的键的集合就是一个并发的源，
 >   >    通过这个源创建的Spliterator包含```CONCURRENT```这个特性
->   > 3. 
->   >
->   >
->   >
->   >
->   >
->   >
->   >
->   >
->   >
->   >
->   >
->   >
-
+>   > 3. 可变的源提供了一种延迟绑定和快速失败的Spliterator，延迟绑定会减少或限制修改影响计算的时间窗口(计算时才进行绑定)。
+>   >    快速失败会在遍历已经开始检测源的结构是否已经变化，并且会抛出```ConcurrentmodificationException()```。
+>   >    比如： JDK中```ArrayList```和其他的非并发的集合，他们都提供个一种延迟绑定，快速失败的分割迭代器。
+>   > 4. 可变的源不是延迟绑定，但是是快速失败的，增加了抛出 ```ConcurrentmodificationExcetion```，因为潜在的可修改的时间窗口被放大了(绑定-----修改时间窗口被放大----->计算)，抛出异常的可能性就更大。
+>   > 5. 可变的源提供了延迟绑定，但是不是快速失败的，会出现任意的，不确定的计算结果，在遍历开始之后进行了修改的话。
+>   > 6. 可变的源提供了一个非延迟绑定，且不是快速失败的，出现不确定计算结果的可能性更大。
+>   
+> * tryAdvance(Consumer<? super T> action): 如果有下一个元素，去执行action这个方法，并且返回true,没有下一个元素，返回False,如果时ORDERED的，则会按照顺序执行，产生的异常会抛给调用者。
+> 
+> * forEachRemaining(Consumer<? super T> action): 针对剩余的元素进行指定的动作，在当前线程使用串行的方式执行，知道所有元素被处理，或者抛出了异常；
+>   如果时ORDERED的，则会按照顺序执行，产生的异常会传递给调用者。默认的实现会重复调用tryAdvance这个方法，直到返回false。在必要的情况下，应该被重写。
+> 
+> * trySplit():返回一个新的Spliterator对；如果这个Spliterator能够进行分割，就会返回一个Spliterator，返回的Spliterator包含的元素不会被当前的Spliterator包含。
+>   如果这个Spliterator是一个ORDERED的，那么返回的Spliterator也应该是个ORDERED的。
+>   除非当前的Spliterator包含的是个无限的元素的源，否则重复调用这个方法最终会返回一个null，表示无法在继续分割。
+>   当返回的结果不为null时：
+>   > 1. 在分割之前，```estimateSize()```估算大小返回的值，必须大于或等于分割之后当前Spliterator的```estimateSize()```返回的值，同时大于或等于 ```trySplit()```返回的Spliterator的```estimateSize()```返回的值。
+>   > 2. 如果这个Spliterator是一个SUBSIZED的，那么在分割之前的```estimateSize()```返回的值等于，分割之后返回的Spliterator和当前的Spliterator ```estimateSize()```的和。
 >
+>   这个方法出于任何一个原因都有可能返回一个null, 原因包括：原来的Spliterator就是空的，遍历已经开始，数据结构存在限制，还有性能上的考量。
+>   
+>   理想的这个方法，在不需要遍历的时候，会将元素分成两半，平衡的并行计算；大多数情况偏离了这个做法仍然有效，比如：对一个近似平衡的树进行近似平衡的分割。或者这个树只有一两个元素，不能在对这个树进行分割。
+>   然而很不平衡的分割，或者没有效率的trySplit的这种机制会让并发效率急剧的降低。
 >
+> * estimateSize()：估算大小，返回一个会被```forEachRemaining()```遍历的元素数量的估算值，如果时无限的元素，未知的元素，或者计算成本特别高的元素，会返回一个```Long#MAX_VALUE```值，Long的最大值。
+>   如果这个Spliterator包含SIZED，并且它没有被部分的遍历和分割，或者这个Spliterator包含SUBSIZED,并且没有被部分的进行遍历，那么这个```estimateSize()```就是一个精确的会被完整遍历所遇到元素的个数的值，
+>   否则，这个估算得到的值是不精确的，并且随着```trySplit()```的调用会逐渐的减少。
+>   一个不太精确的计算是有用的且成本不高的。
 >
+> * getExactSizeIfKnow():如果知道返回一个确定的大小，如果Spliterator()包含一个SIZED会直接返回一个```estinateSize()```否则直接返回一个-1；
+>   默认实现如果Spliterator()包含SIZED,直接返回```estimateSize()```的结果，否则返回 -1。
+>   
+> 
+> * characteristics()：返回一个Spliterator包含特性值的集合，这个结果表示为ORed values 的值从 
+>   ```ORDERED、DISTINCT、SORTED、SIZED、NONNULL、IMMUTABLE、CONCURRENT、SUBSIZED```八个中获取，
+>   对于一个Spliterator，在trySplit调用之前和调用时，重复调用characteristics()会返回一个相同的值。
+>   如果Spliterator返回了一个不同的特性值集合(单个的多次调用当中)，对于使用这个Spliterator的任何计算都是不被保证的。
+>   对于一个Spliterator在分割之前和分割之后的特性值可能不同。
 >
+> * hasCharacteristics(int characteristics)：判断是否包含指定的 characteristics(特性值)。
 >
+> * getComparator()：如果这个源是有序的，返回一个用于排序的```Comparator```,如果这个源就是自然顺序的，就返回null，如果
+>   这个源是无序的，就抛出 ```IllegalStateException()```异常。
+>
+> * #OfPrimitive
+>    ```
+>       public interface OfPrimitive<T,T_CONS,T_SPLITR extends Spliterator.OfPrimitive<T,T_CONS,T_SPLITR>> 
+>           extends Spliterator<T>    
+>   ```
+>   * 这个一个Spliterator为原生值而设计的分割迭代器
+>   * T         :由Spliterator返回的元素的类型，类型必须要是原生类型的一个包装类型，比如```int```的```Integer```
+>   * T_CONS    :必须是原生的Consumer,位于```java.util.Consumer```对于T的原生类型的Consumer，比如```T:Integer,T_CONS:IntConsumer```
+>   * T_SPLITR  :原生的分割迭代器的类型，必须是针对T的原生特化,比如```T:Integer,T_CONS:IntConsumer,T_SPLITR:Spliterator.ofInt```
+>   
+>   
+# StreamSupport 
+> * 底层的辅助方法，用于创建和操纵流。
+>
+> * 用于以流的方式展现数据结构。
+> 
+> * ## stream(Spliterator<T> sp, boolean parallel)
+>   * 从一个Spliterator 创建一个穿行或者并行的流
+>   
+>   * 这个Spliterator仅在终止操作之后进行遍历，分割，查询，进行大小的修改。
+>   
+>   * 强烈建议，spliterator 包含 IMMUTABLE、CONCURRENT这两个特性值或者延迟绑定这些特性，
+>     否着，stream和Spliterator应该去减少潜在的修改时间窗口。
+>
+# ReferencePipeline 
+> * 这是一个抽象的基类，用来描述一个中间的管道阶段，或者管道源阶段。
+> * ## Head 
+>   * 表示引用管道的源阶段
