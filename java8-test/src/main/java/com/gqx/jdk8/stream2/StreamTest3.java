@@ -4,6 +4,7 @@ import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * @author gqx
@@ -16,7 +17,6 @@ public class StreamTest3 {
         ,"teacher","welcome","person","student"
         );
 //         list.stream().forEach(System.out::println);
-
         list.stream().map(a->a).forEach(System.out::println);
 
     }
