@@ -257,9 +257,60 @@
 >   * 实现可以使用flag这个参数进行优化Sink的包装，即这个方法实现的优化。比如对于 ```Stream#distionct()```方法，如果这个流就有
 >     ```DISTINCT```这个特性值，那么就可以直接返回传入的这个Sink。
 >   * 
+> # <R> R evaluate(TerminalOp<E_OUT,R> terminalOp)
+>   * 这是一个终止的计算方法。
+>   * 他会使用一个终止的操作来计算管道并且返回一个结果。
+>
+> # Spliterator<?> sourceSpliterator(int terminalFlags) 
+>   * 获取管道阶段源的spliterator，对于穿行的或者无状态的并行管道，返回的就是源分隔迭代器；
+>     对于一个有状态的并行的管道，返回来的spliterator描述了所有计算结果，(直到)并且包括最近的有状态的操作。
+>
+>
 >
 # Sink 
 > * ```Sink``` 是 ```Consumer```的一个扩展，用于在流管道的各个阶段处理值，还提供了一些额外的方法去控制大小的信息和额外的流程。。。
 > * 
 >
+>
+>
+# ForEachOps
+> * 这是一个工厂，用来创建一个```TerminalOp```的实例，这个实例会执行一个动作，针对流当中的每一个元素；所支持的变化包括无序的遍历(元素被提供给```Consumer```这个对象，只要是可用的)；
+>   和有序的遍历(元素提供给```Consumer```对象，以他们所遇到的顺序)。
+>
+> * 元素在任意的线程中以可用的顺序提供给```Consumer```对象，对于有序的遍历,会得到确保处理元素一定是按照顺序的(```happens-before```某一件事情一定是发生在另一件事情之前)。
+> 
+> # <T> TerminalOp<T,Void> makeRef(Consumer<? super T> action,boolean ordered)
+>   * 构建一个TerminalOp，会对流中的每一个元素执行给定的动作。
+>   * ordered : 是否需要一个有序的遍历
+>
+> # ForEachOp 
+>   * 这是一个```TerminalOp```终止操作，他会计算一个流管道，并且将输出发送给自身作为一个```TerminalSink```，元素会发送给任意的线程，如果是无序的，那么发送的时候就会独立于
+>     流当中遇到的顺序。】
+>   * 这个终止操作是一个无状态的操作，对于并行的计算来说，每一个```ForEachTask```(ForkJoin) 的叶子节点都会发送一个```TerminalSink```的引用。
+>   
+>
+>
+>
+# TerminalOp 
+> * 在流管道中的一个操作，他会接收一个流作为输入，生成一个结果，或者是拥有副作用的。一个```TerminalOp```会有一个输入类型，和一个流的shape，和一个结果类型。```TerminalOp```
+>   还会用以一组```operation flags```操作标识，描述了操作时如何处理流当中的元素，比如(短路、按照遇到的顺序执行；查看```StreamOpFlag```)。
+>
+> * ```TerminalOp```必须提供一个穿行的和并行的实现，根据给定的流源和特定的中间操作。
+> 
+>
+# PipelineHelper
+> * 这是一个帮助类，用于执行流管道；它会捕获所有关于流管道的信息(```output shape输出种类，intermediate operations中间的操作，stream flags流的标志位，parallelism并行还是穿行，etc ```)。
+> * PipelineHelper 描述了一个流管道最初的分块，包括了它的源，中间的操作，以及额外的附加的合并的信息，关于终止的或者有状态的操作，遵循最后的PipelineHelper描述的中间操作。```PipelineHelper```
+>   会被传递给```TerminalOp#evaluateParallel(PipelineHelper,java.util.Spliterator)```，```AbstractPipeline#evaluateSequential(PipelineHelper,java.util.Spliterator)```,
+>   ```AbstractPipeline#opEvaluateParallel(PipelineHelper,java.util.Splliterator,java.util.function.IntFunction)```等方法，可以使用```PipelineHelper```去访问关于管道的各种信息，
+>
+> # <P_ID,S extends Sink<P_OUT>> S wrapAndCopyInto(S sink,Spliterator<P_IN> spliterator)
+>   * 将由这个```PipelineHelper```所描述管道阶段(一系列动作)，应用给所提供的```spliterator```(数据源) ,将结果发送给```sink```对象。
+>
+> # <P_IN> Sink<P_IN> wrapSink(Sink<P_OUT> sink);
+>   * 接收了一个Sink，这个Sink本身会接收PipelineHelper输出类型的元素，然后使用一个Sink对其进行包装，这个Sink会接收输入类型的元素，并且实现所有由PipelineHelper描述的中间操作，并且将结果传递给所提供
+>     所提供的Sink上面。完成对流当中多个操作的串连。
+> # <P_IN> void copyInto(Sink<P_IN> wrappedSink,Spliterator<P_IN> spliterator);
+>   * 将从spliterator对象当中所获取到的元素，将它推到所提供的Sink当中，如果这个流管道已经知道是有短路阶段的话，就会进行一个短路的判断。
+>   * 这个方法将会遵循Sink的调用规则，先调用Sink.begin,然后调用Sink.accept，在元素全部推送完成之后，调用Sink.end。
 >

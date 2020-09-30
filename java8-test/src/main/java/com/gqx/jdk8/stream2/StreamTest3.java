@@ -18,7 +18,7 @@ public class StreamTest3 {
         ,"teacher","welcome","person","student"
         );
     ///        list.stream().forEach(System.out::println);
-        list.stream().distinct().filter(a->a.length()>5).map(a->a+"_abc").forEach(System.out::println);
+        list.stream().distinct().filter(a->a.length()>5).map(a->a+"_abc").findAny();
 
     }
 }
