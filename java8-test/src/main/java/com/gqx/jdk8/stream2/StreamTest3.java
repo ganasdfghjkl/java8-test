@@ -1,11 +1,7 @@
 package com.gqx.jdk8.stream2;
 
-import java.sql.SQLOutput;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author gqx
@@ -19,6 +15,5 @@ public  class StreamTest3 {
         );
     ///        list.stream().forEach(System.out::println);
         list.stream().distinct().filter(a->a.length()>5).map(a->a+"_abc").forEach(System.out::println);
-
     }
 }
