@@ -22,6 +22,6 @@ public class OptionalTest2 {
         System.out.println(
                         optional.map(Company::getEmployees)
                 .orElse(Collections.emptyList())
-        );
+         );
     }
 }
