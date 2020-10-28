@@ -31,8 +31,6 @@ public class JodaTest1 {
     public static void main(String[] args) {
         System.out.println(convertUTC2Date("2020-10-10T07:07:07.451Z"));
         System.out.println(convertDate2UTC(new Date()));
-
-
-
+        System.out.println(convertDate2LocalByDateFormat(new Date(),"yyyy-MM-dd HH:mm:ss"));
     }
 }
