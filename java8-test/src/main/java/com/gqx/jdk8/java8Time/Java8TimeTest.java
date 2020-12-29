@@ -47,6 +47,10 @@ public class Java8TimeTest {
         System.out.println(localDate6.equals(localDate7));
         System.out.println("--------------");
         Set<String> set = ZoneId.getAvailableZoneIds();
+
+        /**
+         * 构造块
+         */
         Set<String> treeSet = new TreeSet<String>() {
             {
                 addAll(set);
